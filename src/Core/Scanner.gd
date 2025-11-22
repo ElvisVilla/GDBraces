@@ -19,7 +19,7 @@ static var keywords: Dictionary = {
 	"func": Token.TokenType.FUNC,
 	"if": Token.TokenType.IF,
 	"elif": Token.TokenType.ELIF,
-	"nil": Token.TokenType.NIL,
+	"null": Token.TokenType.NIL,
 	"or": Token.TokenType.OR,
 	"print": Token.TokenType.PRINT,
 	"return": Token.TokenType.RETURN,
@@ -61,6 +61,8 @@ func scanToken() -> void:
 		')': addToken(Token.TokenType.RIGHT_PAREN)
 		'{': addToken(Token.TokenType.LEFT_BRACE)
 		'}': addToken(Token.TokenType.RIGHT_BRACE)
+		'[': addToken(Token.TokenType.LEFT_BRACKET)
+		']': addToken(Token.TokenType.RIGHT_BRACKET)
 		',': addToken(Token.TokenType.COMMA)
 		'.': addToken(Token.TokenType.DOT)
 		'@': addToken(Token.TokenType.AT)
@@ -78,13 +80,17 @@ func scanToken() -> void:
 		'=': addToken(Token.TokenType.EQUAL_EQUAL if isMatch('=') else Token.TokenType.EQUAL)
 		'<': addToken(Token.TokenType.LESS_EQUAL if isMatch('=') else Token.TokenType.LESS)
 		'>': addToken(Token.TokenType.GREATER_EQUAL if isMatch('=') else Token.TokenType.GREATER)
-		'/':
-			if isMatch('/'):
-				# a comment goes until the end of the line
-				while (peek() != '\n' and !isAtEnd()):
-					advance()
-			else:
-				addToken(Token.TokenType.SLASH)
+		#'/':
+			#if isMatch('/'):
+				## a comment goes until the end of the line
+				#while (peek() != '\n' and !isAtEnd()):
+					#advance()
+			#else:
+				#addToken(Token.TokenType.SLASH)
+		'#': 
+			while peek() != '\n' and !isAtEnd():
+				advance()
+		'/': addToken(Token.TokenType.SLASH)
 		' ', '\r', '\t': pass # ignore white spaces
 		'\n': line += 1
 		'"': string()

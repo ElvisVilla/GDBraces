@@ -3,6 +3,7 @@ class_name Parser
 
 var tokens: Array[Token]
 var current: int = 0
+var current_token: Token
 
 func _init(tokens: Array[Token]) -> void:
 	self.tokens = tokens
@@ -13,7 +14,6 @@ func parse() -> Array[Stmt]:
 		statements.append(declaration())
 
 	return statements
-	
 
 func expression() -> Expr:
 	return assignment()
@@ -59,6 +59,11 @@ func classDeclaration() -> Stmt:
 			fields.append(field())
 		elif isMatch(Token.TokenType.FUNC):
 			methods.append(function("method"))
+		# else:
+		# 	# Unexpected token in class body
+		# 	error(peek(), "Unexpected declaration '%s' in class body. Expected field or method declaration." % peek().lexeme)
+		# 	advance() # Consume the bad token to prevent infinite loop
+		# 	synchronize() # Try to recover
 
 	consume(Token.TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 	return Class.create(name, superclass, fields, methods)
@@ -125,16 +130,16 @@ func returnStatement() -> Stmt:
 
 #TODO: Implement typeHint like on fields() declaration
 func varDeclaration() -> Stmt:
-	var name = consume(Token.TokenType.IDENTIFIER, "Expect variable name")
+	var name = consume(Token.TokenType.IDENTIFIER, "Expected field name")
 
-	var typeHint: Token
+	var typeHint: Token = null
 	var initializer: Expr = null
 
 	if isMatch(Token.TokenType.COLON): # var fieldName :    <---
 		typeHint = previous() # store ':' this means is an inferred type
 		if isMatch(Token.TokenType.EQUAL): # var fieldName :=      <---
 			initializer = assignment() # var fieldName := assignment()     <---
-		elif check(Token.TokenType.IDENTIFIER):
+		elif check(Token.TokenType.IDENTIFIER): # var fieldName: Timer  <--- Example
 			if peekNext().type == Token.TokenType.LEFT_PAREN: # var fieldName: Timer() or class instances
 				typeHint = previous()
 				initializer = assignment()
@@ -144,12 +149,15 @@ func varDeclaration() -> Stmt:
 				if isMatch(Token.TokenType.EQUAL): # var fieldName : typeHint =
 					initializer = assignment() # var fieldName : typeHint = assignment()
 
-
-		elif !check(Token.TokenType.IDENTIFIER): # var fieldName: value
+		else: # var fieldName: value    <--- new sintax
 			initializer = assignment()
 
-	if isMatch(Token.TokenType.EQUAL) and initializer == null: # var fieldName := assignment()
+	if isMatch(Token.TokenType.EQUAL):
 		initializer = assignment()
+		
+	elif isValueToken(peek()):
+		error(peek(), "Expect '=' or ':' before value in variable declaration")
+		synchronize() # Try to recover by advancing to next statement
 
 	return Var.create(name, typeHint, initializer)
 
@@ -181,7 +189,7 @@ func field() -> Field:
 		typeHint = previous() # store ':' this means is an inferred type
 		if isMatch(Token.TokenType.EQUAL): # var fieldName :=      <---
 			initializer = assignment() # var fieldName := assignment()     <---
-		elif check(Token.TokenType.IDENTIFIER):
+		elif check(Token.TokenType.IDENTIFIER): # var fieldName: Timer  <--- Example
 			if peekNext().type == Token.TokenType.LEFT_PAREN: # var fieldName: Timer() or class instances
 				typeHint = previous()
 				initializer = assignment()
@@ -191,13 +199,16 @@ func field() -> Field:
 				if isMatch(Token.TokenType.EQUAL): # var fieldName : typeHint =
 					initializer = assignment() # var fieldName : typeHint = assignment()
 
-
-		elif !check(Token.TokenType.IDENTIFIER): # var fieldName: value
+		else: # var fieldName: value    <--- new sintax
 			initializer = assignment()
 
-	if isMatch(Token.TokenType.EQUAL) and initializer == null: # var fieldName := assignment()
+	if isMatch(Token.TokenType.EQUAL):
 		initializer = assignment()
-
+		
+	elif isValueToken(peek()):
+		error(peek(), "Expect '=' or ':' before value in variable declaration")
+		synchronize() # Try to recover by advancing to next statement
+	
 	#getter/setters
 	# Implicit return recives Expr or Block for block Stmt
 	var getter: Array[Stmt]
@@ -248,13 +259,19 @@ func function(kind: String) -> Function:
 	consume(Token.TokenType.RIGHT_PAREN, "Expected ')' after parameters.")
 
 	var returnType: Token = null
-	if isMatch(Token.TokenType.COLON):
-		returnType = consume(Token.TokenType.IDENTIFIER, "Expect return type.")
-	elif check(Token.TokenType.IDENTIFIER):
+	#if isMatch(Token.TokenType.COLON):
+		#returnType = consume(Token.TokenType.IDENTIFIER, "Expect return type.")	
+	
+	if check(Token.TokenType.IDENTIFIER):
 		returnType = consume(Token.TokenType.IDENTIFIER, "Expect return type.")
 	elif check(Token.TokenType.ARROW):
-		error(peek(), "Expect ':' before return type or directly return type")
+		error(peek(), "Expect only return type Identifier, Not '->' Symbol")
 		synchronize()
+		
+	if isValueToken(peek()):
+		error(peek(), "Literals are not valid return types")
+		synchronize()
+		
 	
 	consume(Token.TokenType.LEFT_BRACE, "Expected '{' before %s body." % kind)
 	var body: Array[Stmt] = block()
@@ -436,6 +453,7 @@ func check(type: Token.TokenType) -> bool:
 ## Increment the current index and return the previous Token
 func advance() -> Token:
 	if !isAtEnd(): current += 1
+	current_token = tokens[current]
 	return previous()
 
 ## Check if the the current Token is the end of the file
@@ -466,7 +484,7 @@ func synchronize():
 	while (!isAtEnd()):
 		#Note: This needs to be evaluated, GDBraces don't use ';' to terminate statements
 		if previous().type == Token.TokenType.SEMICOLON: return
-
+		
 		match peek().type:
 			Token.TokenType.CLASS, \
 			Token.TokenType.FUNC, \
@@ -478,4 +496,20 @@ func synchronize():
 			Token.TokenType.RETURN:
 				return
 	
-	advance()
+		advance()
+		
+func isValueToken(token: Token) -> bool:
+	return token.type in [
+		Token.TokenType.NUMBER,
+		Token.TokenType.STRING,
+		Token.TokenType.TRUE,
+		Token.TokenType.FALSE,
+		Token.TokenType.NIL,
+		Token.TokenType.IDENTIFIER,
+		Token.TokenType.LEFT_PAREN,
+		Token.TokenType.LEFT_BRACKET,
+		Token.TokenType.MINUS,
+		Token.TokenType.BANG,
+	]
+	
+	
