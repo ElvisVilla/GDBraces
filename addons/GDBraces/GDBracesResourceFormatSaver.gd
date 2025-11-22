@@ -1,3 +1,4 @@
+@tool
 extends ResourceFormatSaver
 class_name GDBracesResourceFormatSaver
 
@@ -27,7 +28,7 @@ func _save(resource: Resource, path: String, flags: int) -> Error:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		return FileAccess.get_open_error()
-
+	
 	file.store_string(resource.source_code)
 	file.close()
 

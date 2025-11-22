@@ -1,18 +1,16 @@
 [gd_scene load_steps=7 format=3 uid="uid://yfwaxavyllnl"]
 
 [ext_resource type="Script" uid="uid://dn555qh5jkisy" path="res://addons/GDBraces/CreateScriptProperty.gd" id="1_txmwg"]
-[ext_resource type="Script" uid="uid://dx6fwha8wvcn" path="res://addons/GDBraces/GDBraceScript.gd" id="2_dwpdv"]
+[ext_resource type="Script" uid="uid://dg5uku256cjda" path="res://generated/soprano.gd" id="2_dwpdv"]
 [ext_resource type="FontVariation" uid="uid://dmt4s0gk4qrtf" path="res://addons/SF Pro Fonts/bold_variation.tres" id="2_txmwg"]
-[ext_resource type="Texture2D" uid="uid://cu8g8cvpj0ejw" path="res://addons/icons/ScriptExtend.svg" id="4_dwpdv"]
-
-[sub_resource type="Resource" id="Resource_xul1m"]
-script = ExtResource("2_dwpdv")
+[ext_resource type="Texture2D" uid="uid://bpnjgxlck0qrl" path="res://addons/icons/Script.svg" id="3_xul1m"]
+[ext_resource type="Script" uid="uid://xe67l64ds34k" path="res://generated/nani.gd" id="4_xul1m"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c4dv0"]
-content_margin_left = 2.0
-content_margin_top = 2.0
-content_margin_right = 2.0
-content_margin_bottom = 2.0
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
 bg_color = Color(0.08627451, 0.32941177, 0.3137255, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
@@ -20,7 +18,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 corner_detail = 5
 
-[node name="MarginContainer" type="MarginContainer" node_paths=PackedStringArray("background", "label", "textureRect")]
+[node name="MarginContainer" type="MarginContainer" node_paths=PackedStringArray("background")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -32,35 +30,42 @@ theme_override_constants/margin_bottom = 16
 script = ExtResource("1_txmwg")
 state = 3
 background = NodePath("background")
-label = NodePath("background/HBoxContainer/Label")
-textureRect = NodePath("background/HBoxContainer/TextureRect")
-scrp = SubResource("Resource_xul1m")
-metadata/script = "res://notarial.braces"
 
 [node name="background" type="PanelContainer" parent="."]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_c4dv0")
+script = ExtResource("2_dwpdv")
+metadata/script = "res://soprano.braces"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="background"]
 layout_mode = 2
 alignment = 1
 
-[node name="Label" type="Label" parent="background/HBoxContainer"]
-visible = false
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_txmwg")
-theme_override_font_sizes/font_size = 32
-text = "With Script"
-
-[node name="Label2" type="Label" parent="background/HBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("2_txmwg")
-theme_override_font_sizes/font_size = 32
-text = "Dash"
-
 [node name="TextureRect" type="TextureRect" parent="background/HBoxContainer"]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-texture = ExtResource("4_dwpdv")
+texture = ExtResource("3_xul1m")
+expand_mode = 4
 stretch_mode = 5
+script = ExtResource("4_xul1m")
+
+[node name="Label" type="Label" parent="background/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_txmwg")
+theme_override_font_sizes/font_size = 28
+text = "GDBraceScript {   }"
+
+[node name="Button" type="Button" parent="background/HBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Load"
+
+[node name="Button2" type="Button" parent="background/HBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Create"
+
+[node name="Button3" type="Button" parent="background/HBoxContainer"]
+visible = false
+layout_mode = 2
+text = "Clear"

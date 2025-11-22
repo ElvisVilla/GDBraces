@@ -1,5 +1,7 @@
-extends Resource
+@tool
+@icon("res://addons/icons/Script128x128.png")
 class_name GDBraceScript
+extends Resource
 
 var source_code: String = ""
 var gd_script_path: String = ""
@@ -13,36 +15,28 @@ func set_source_code(value: String) -> void:
 
 func _transpile_and_save() -> void:
     if resource_path.is_empty():
-        return # Not saved yet
+        return
 
-    # Generate the .gd path
     var filename = resource_path.get_file().get_basename()
     gd_script_path = "res://generated/%s.gd" % filename
 
-    # Ensure the generated folder exists
     if not DirAccess.dir_exists_absolute("res://generated"):
         DirAccess.make_dir_absolute("res://generated")
 
-    # Transpile (call your transpiler here)
-    var transpiled_code = _transpile(source_code)
+    var transpiled_code = Lox.transpile(self) # _transpile(source_code)
+    print(transpiled_code)
+    if transpiled_code.is_empty(): return
 
-    # Save the .gd file
     var file = FileAccess.open(gd_script_path, FileAccess.WRITE)
     if file:
         file.store_string(transpiled_code)
         file.close()
         
-        # Refresh the filesystem so Godot sees the new file
         EditorInterface.get_resource_filesystem().scan()
     else:
         push_error("Failed to save generated script: " + gd_script_path)
 
 func _transpile(source: String) -> String:
-    # TODO: Call your actual transpiler here
-    # For now, placeholder:
-    # var code : String = ""
-    # code += "extends node"
-    # code += ""
     return """
 extends Node
 

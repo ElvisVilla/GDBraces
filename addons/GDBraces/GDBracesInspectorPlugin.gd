@@ -7,7 +7,7 @@ func _can_handle(object: Object) -> bool:
     return object is Node
 
 func _parse_begin(object: Object) -> void:
-    # add_custom_control(createScriptProperty.instantiate())
+    add_custom_control(createScriptProperty.instantiate())
     var editor = BraceScriptNodeEditor.new()
     editor.setup(object as Node)
     add_custom_control(editor)
@@ -17,7 +17,6 @@ func _parse_property(object: Object, type: Variant.Type, name: String, hint_type
         add_property_editor(name, BraceScriptPropertyEditor.new())
         return true
     return false
-
 
 # Custom control for script assignment in Node
 class BraceScriptNodeEditor extends HBoxContainer:
@@ -41,10 +40,12 @@ class BraceScriptNodeEditor extends HBoxContainer:
     func _init():
         hbox = HBoxContainer.new()
         add_child(hbox)
+        hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
         text = Label.new()
         text.text = "[empty]"
         text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        text.set("theme_override_fonts/font", load("res://addons/SF Pro Fonts/bold_variation.tres"))
         hbox.add_child(text)
 
         load_button = Button.new()
@@ -99,7 +100,7 @@ class BraceScriptNodeEditor extends HBoxContainer:
         if current_braces_path:
             text.text = current_braces_path.get_file()
         else:
-            text.text = "[emptysh]"
+            text.text = "No Script Attached"
 
     func _on_load_pressed():
         file_dialog.popup_centered_ratio(0.5)
@@ -122,7 +123,8 @@ class BraceScriptNodeEditor extends HBoxContainer:
             path += ".braces"
         
         var new_script = GDBraceScript.new()
-        new_script.source_code = "" # or some template code
+        var klassName = path.get_file().split(".")[0]
+        new_script.source_code = "extends Node \nclass %s {\n\n\t\n}" % klassName # or some template code
         
         var err = ResourceSaver.save(new_script, path)
         if err == OK:

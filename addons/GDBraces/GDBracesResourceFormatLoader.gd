@@ -1,13 +1,18 @@
+@tool
 extends ResourceFormatLoader
 class_name GDBracesResourceFormatLoader
 
-func _handles_type(type: StringName) -> bool:
-	print("type being passed is: ", str(type))
-	return type == "GDBraceScript"
+# func _handles_type(type: StringName) -> bool:
+# 	print("type being passed is: ", str(type))
+# 	return type == "GDBraceScript"
 	
 func _get_recognized_extensions() -> PackedStringArray:
 	return PackedStringArray(["braces"])
 	
+
+func _recognize_path(path: String, type: StringName) -> bool:
+	return path.get_extension() == "braces"
+
 # func _recognize_path(path: String, type: StringName) -> bool:
 # 	var fileExtension = path.get_extension()
 # 	var validExtension = _get_recognized_extensions()
@@ -17,11 +22,11 @@ func _get_recognized_extensions() -> PackedStringArray:
 	
 # 	return false
 
-func _get_resource_type(path: String) -> String:
-	if path.get_extension() == "braces":
-		return "GDBraceScript"
+# func _get_resource_type(path: String) -> String:
+# 	if path.get_extension() == "braces":
+# 		return "GDBraceScript"
 
-	return ""
+# 	return ""
 
 func _load(path: String, original_path: String, use_sub_threads: bool, cache_mode: int) -> Variant:
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -35,4 +40,7 @@ func _load(path: String, original_path: String, use_sub_threads: bool, cache_mod
 	var resource := GDBraceScript.new()
 	resource.source_code = source
 	resource.resource_path = path
+
+	print("Yeah it is not changing the GD")
+
 	return resource

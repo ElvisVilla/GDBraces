@@ -28,6 +28,8 @@ var icons: Dictionary = {
 @export var scrp: GDBraceScript
 
 func _ready():
+	var stylebox = background.get("theme_override_styles/panel")
+	stylebox.set("bg_color", Color('165450'))
 	state = State.EXTENDS_SCRIPT
 	StateChanged.connect(UpdateState)
 
