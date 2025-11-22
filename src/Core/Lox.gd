@@ -13,7 +13,6 @@ static var hadRuntimeError: bool
 # func main(args: Array):
 static func main(args: String):
 	if args.length() > 1:
-		# print("Usage: GDSwift [script_path]")
 	# elif args.length() == 1: # TODO: How do we check for File?
 		run_file(args)
 	# else:
@@ -37,37 +36,19 @@ static func run_prompt():
 	# TODO: Implement the interactive REPL here.
 	# The GDScript equivalent of the Java 'runPrompt' function.
 	print("Starting interactive prompt...")
- 
-	# Implement a text editor or use a plugin for reading the console
-	# Check again this code in the book, here is the Java code:
-
-#    private static void runPrompt() throws IOException {
-#     InputStreamReader input = new InputStreamReader(System.in);
-#     BufferedReader reader = new BufferedReader(input);
-
-#     for (;;) { 
-#       System.out.print("> ");
-#       String line = reader.readLine();
-#       if (line == null) break;
-#       run(line);
-#       hadError = false
-#     }
-#   }
 
 
 static func run(source: String):
 	var scanner: Scanner = Scanner.new(source)
 	var tokens: Array[Token] = scanner.scanTokens()
 
-	#for token in tokens:
-		#print(token)
+	for token in tokens:
+		print(token)
 
-	# AST = Asbtract Sintax Tree
 	var parser = Parser.new(tokens)
 	var statements: Array[Stmt] = parser.parse()
 
 	if hadError:
-		# print(hadError)
 		return
 	
 	#RESOLVER
@@ -79,17 +60,37 @@ static func run(source: String):
 	# # # INTERPRETER
 	# interpreter.interpret(statements)
 
-
-	var secondTranspiler = Transpiler.new()
-	var gdCode = secondTranspiler.transpile(statements)
+	var transpiler = Transpiler.new()
+	var gdCode = transpiler.transpile(statements)
 	print(gdCode)
 
-	# var file = newFile("res://src/Core/Transpiler/", "Weapon")
+static func transpile(braceFile: GDBraceScript) -> String:
+	var scanner: Scanner = Scanner.new(braceFile.source_code)
+	var tokens: Array[Token] = scanner.scanTokens()
 
-	# file.store_string(gdCode)
-	# file.close()
+	#for token in tokens:
+		#print(token)
 
-	# print(ASTPrinter.new().print(expresion))
+	var parser = Parser.new(tokens)
+	var statements: Array[Stmt] = parser.parse()
+
+	if hadError:
+		return ""
+	
+	#RESOLVER
+	# var resolver := Resolver.new(interpreter)
+	# resolver.resolve(statements)
+
+	# if hadError: return
+
+	# # # INTERPRETER
+	# interpreter.interpret(statements)
+
+	var transpiler = Transpiler.new()
+	var gdCode = transpiler.transpile(statements)
+
+	return gdCode
+	print(gdCode)
 
 static func newFile(outputDir: String, className: String) -> FileAccess:
 	var path = formatPath(outputDir, className)
