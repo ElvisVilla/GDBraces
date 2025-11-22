@@ -188,7 +188,12 @@ func field() -> Field:
 	if isMatch(Token.TokenType.COLON): # var fieldName :    <---
 		typeHint = previous() # store ':' this means is an inferred type
 		if isMatch(Token.TokenType.EQUAL): # var fieldName :=      <---
-			initializer = assignment() # var fieldName := assignment()     <---
+			if !peekNext().type == Token.TokenType.LEFT_PAREN:
+				var token = peek()
+				error(token, "Cannot Assign a type identifier, use '%s()' instead: " % token.lexeme)
+				synchronize()
+			else:
+				initializer = assignment() # var fieldName := assignment()     <---
 		elif check(Token.TokenType.IDENTIFIER): # var fieldName: Timer  <--- Example
 			if peekNext().type == Token.TokenType.LEFT_PAREN: # var fieldName: Timer() or class instances
 				typeHint = previous()
@@ -198,6 +203,7 @@ func field() -> Field:
 
 				if isMatch(Token.TokenType.EQUAL): # var fieldName : typeHint =
 					initializer = assignment() # var fieldName : typeHint = assignment()
+
 
 		else: # var fieldName: value    <--- new sintax
 			initializer = assignment()
@@ -265,7 +271,7 @@ func function(kind: String) -> Function:
 	if check(Token.TokenType.IDENTIFIER):
 		returnType = consume(Token.TokenType.IDENTIFIER, "Expect return type.")
 	elif check(Token.TokenType.ARROW):
-		error(peek(), "Expect only return type Identifier, Not '->' Symbol")
+		error(peek(), "Expect return type Identifier, Not '->' Symbol")
 		synchronize()
 		
 	if isValueToken(peek()):
@@ -511,5 +517,3 @@ func isValueToken(token: Token) -> bool:
 		Token.TokenType.MINUS,
 		Token.TokenType.BANG,
 	]
-	
-	
